@@ -12,7 +12,7 @@
 - Use
 ```javascript
   //set Json
-  gg.setJSON(JsonObject);  
+  gg.setJSON(JsonObject, false);   // New(false) or Add(true) Mode 
 
   //Detail Use
   gg["Object Name"].Set("insert Value");
