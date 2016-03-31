@@ -230,7 +230,8 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	};
 	GETTERSETTER.onEdit = function (args) {
-		if (args.length > 0 && typeof args === "boolean") {
+		console.log(args);
+		if (typeof args === "boolean") {
 			SET.EDIT = args;
 		}
 	};
@@ -244,3 +245,5 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	};
 	return GETTERSETTER;
 })(window.GETTERSETTER || {}, jQuery);
+GETTERSETTER.onEdit(true);
+GETTERSETTER.set();
