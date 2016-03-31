@@ -228,5 +228,3 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	};
 	return GETTERSETTER;
 })(window.GETTERSETTER || {}, jQuery);
-var a = GETTERSETTER.set("data-sipu");
-console.log(a);
