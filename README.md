@@ -6,6 +6,7 @@
  - Initialize
 ```javascript
   GETTERSETTER.masterNodeset("json-master-sipu"); //set The ROOT NODE TAG value
+  GETTERSETTER.onEdit(true); // set Click editable
   var gg = GETTERSETTER.set("data-sipu"); // Set the Tagname
 ```
 
@@ -30,8 +31,6 @@
   //remove 1Row index
   GETTERSETTER.removeRowNode(1);
 
-  //click Edit able
-  GETTERSETTER.onEdit(true);
 
 ```
 
