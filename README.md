@@ -12,7 +12,7 @@
 - Use
 ```javascript
   //set Json
-  gg.setJSON(JsonObject, false);   // New(false) or Add(true) Mode 
+  gg.setJSON(JsonObject, false);   // New(false) or Add(true) Mode
 
   //Detail Use
   gg["Object Name"].Set("insert Value");
@@ -23,6 +23,16 @@
 
   //Make Json
   var a = GETTERSETTER.makeJSON("data-sipu");
+
+  //add 1Row
+  GETTERSETTER.addRowNode(1);
+
+  //remove 1Row index
+  GETTERSETTER.removeRowNode(1);
+
+  //click Edit able
+  GETTERSETTER.onEdit(true);
+
 ```
 
 ##On Detail

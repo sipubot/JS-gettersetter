@@ -4,7 +4,7 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	var SET = {
 		MASTERDATANODE: "json-master-sipu",
 		DATANAME: "",
-		EDIT: true
+		EDIT: false
 	};
 
 	function getNode() {
@@ -229,6 +229,11 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 			SET.MASTERDATANODE = args;
 		}
 	};
+	GETTERSETTER.onEdit = function (args) {
+		if (args.length > 0 && typeof args === "boolean") {
+			SET.EDIT = args;
+		}
+	};
 
 	GETTERSETTER.set = function (args) {
 		SET.DATANAME = args || "data-sipu";
@@ -239,5 +244,3 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	};
 	return GETTERSETTER;
 })(window.GETTERSETTER || {}, jQuery);
-GETTERSETTER.set();
-GETTERSETTER.removeRowNode(1);
