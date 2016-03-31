@@ -34,6 +34,46 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
+	function makeEditerNode() {
+		var div = document.createElement('div');
+		var input = document.createElement('input');
+		var button = document.createElement('button');
+		var button2 = document.createElement('button');
+		div.appendChild(input);
+		div.appendChild(button2);
+		div.style.position = "fixed";
+		div.style.opacity = "0.7";
+		div.style.display = "none";
+		button2.innerHTML = "X";
+		input.onkeydown = function (e) {
+			if (e.keyCode == 13) {
+				div.style.display = "none";
+			}
+		};
+		if (button2.addEventListener) {
+			button2.addEventListener("click", function () {});
+		} else if (button2.attachEvent) {
+			button2.attachEvent("onclick", function () {
+				div.style.display = "none";
+			});
+		}
+		document.body.appendChild(div);
+		SET.EDITNODE = div;
+		SET.EDITNODE.INPUT = input;
+	}
+	makeEditerNode();
+
+	function showEditerNode(node, e) {
+		SET.EDITNODE.style.top = e.clientY + "px";
+		SET.EDITNODE.style.left = e.clientX + "px";
+		SET.EDITNODE.style.display = "block";
+		SET.EDITNODE.INPUT.value = node.Get();
+		SET.EDITNODE.INPUT.focus();
+		SET.EDITNODE.INPUT.onchange = function () {
+			node.Set(this.value);
+		};
+	}
+
 	function nodeDefaultSet(nodes) {
 		var namespace, idx;
 		for (namespace in nodes) {
@@ -97,46 +137,6 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
-	function makeEditerNode() {
-		var div = document.createElement('div');
-		var input = document.createElement('input');
-		var button = document.createElement('button');
-		var button2 = document.createElement('button');
-		div.appendChild(input);
-		div.appendChild(button2);
-		div.style.position = "fixed";
-		div.style.opacity = "0.7";
-		div.style.display = "none";
-		button2.innerHTML = "X";
-		input.onkeydown = function (e) {
-			if (e.keyCode == 13) {
-				div.style.display = "none";
-			}
-		};
-		if (button2.addEventListener) {
-			button2.addEventListener("click", function () {});
-		} else if (button2.attachEvent) {
-			button2.attachEvent("onclick", function () {
-				div.style.display = "none";
-			});
-		}
-		document.body.appendChild(div);
-		SET.EDITNODE = div;
-		SET.EDITNODE.INPUT = input;
-	}
-	makeEditerNode();
-
-	function showEditerNode(node, e) {
-		SET.EDITNODE.style.top = e.clientY + "px";
-		SET.EDITNODE.style.left = e.clientX + "px";
-		SET.EDITNODE.style.display = "block";
-		SET.EDITNODE.INPUT.value = node.Get();
-		SET.EDITNODE.INPUT.focus();
-		SET.EDITNODE.INPUT.onchange = function () {
-			node.Set(this.value);
-		};
-	}
-
 	function nodeJSONset(nodes) {
 		if (!nodes[SET.MASTERDATANODE]) {
 			console.log("Not have master node!");
@@ -185,10 +185,21 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		};
 	}
 
-	GETTERSETTER.addNode = function () {
+	GETTERSETTER.addRowNode = function () {
+		var nodes = getNode();
 		var parentMaster = nodes[SET.MASTERDATANODE][0].parentNode;
 		var cloneMaster = nodes[SET.MASTERDATANODE][0].cloneNode(true);
+		setNodeFunc(cloneMaster);
+		if (SET.EDIT) {
+			setNodeClickEditer(cloneMaster);
+		}
 		parentMaster.appendChild(cloneMaster);
+	};
+
+	GETTERSETTER.removeRowNode = function (i) {
+		var nodes = getNode();
+		var parentMaster = nodes[SET.MASTERDATANODE][0].parentNode;
+		parentMaster.removeChild(nodes[SET.MASTERDATANODE][i]);
 	};
 
 	GETTERSETTER.makeJSON = function () {
@@ -228,3 +239,5 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	};
 	return GETTERSETTER;
 })(window.GETTERSETTER || {}, jQuery);
+GETTERSETTER.set();
+GETTERSETTER.removeRowNode(1);
