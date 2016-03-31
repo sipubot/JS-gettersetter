@@ -4,8 +4,7 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	var SET = {
 		MASTERDATANODE: "json-master-sipu",
 		DATANAME: "",
-		EDIT: true,
-		EDITNODE: []
+		EDIT: true
 	};
 
 	function getNode() {
@@ -35,8 +34,19 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
+	function nodeDefaultSet(nodes) {
+		var namespace, idx;
+		for (namespace in nodes) {
+			for (idx in nodes[namespace]) {
+				setNodeFunc(nodes[namespace][idx]);
+				if (SET.EDIT && namespace !== SET.MASTERDATANODE) {
+					setNodeClickEditer(nodes[namespace][idx]);
+				}
+			}
+		}
+	}
+
 	function setNodeFunc(node) {
-		node.onEditmode = false;
 		switch (node.tagName) {
 		case "A":
 			node.Set = function (address) {
@@ -67,7 +77,7 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
-	function setNodeClick(node) {
+	function setNodeClickEditer(node) {
 		switch (node.tagName) {
 		case "A":
 			break;
@@ -76,68 +86,55 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		default:
 			if (node.addEventListener) {
 				node.addEventListener("click", function (e) {
-					if(node.onEditmode === false) {
-						node.onEditmode = true;
-						setEditNode(node, e);
-					}
+					showEditerNode(node, e);
 				});
 			} else if (node.attachEvent) {
 				node.attachEvent("onclick", function (e) {
-					if(node.onEditmode === false) {
-						node.onEditmode = true;
-						setEditNode(node, e);
-					}
+					showEditerNode(node, e);
 				});
 			}
 			break;
 		}
 	}
 
-	function setEditNode(node, e) {
+	function makeEditerNode() {
 		var div = document.createElement('div');
 		var input = document.createElement('input');
 		var button = document.createElement('button');
+		var button2 = document.createElement('button');
 		div.appendChild(input);
-		div.appendChild(button);
-		div.className = SET.EDITERCLASS;
+		div.appendChild(button2);
 		div.style.position = "fixed";
 		div.style.opacity = "0.7";
-		div.style.top = e.clientY + "px";
-		div.style.left = e.clientX + "px";
-		input.value = node.Get();
-		button.innerHTML = "\uc218\uc815";
-		node.appendChild(div);
-		SET.EDITNODE.push(div);
-
-		if (button.addEventListener) {
-			button.addEventListener("click", function () {
-				node.Set(input.value);
-				node.removeChild(div);
-				node.onEditmode = false;
-			});
-		} else if (button.attachEvent) {
-			button.attachEvent("onclick", function () {
-				node.Set(input.value);
-				node.removeChild(div);
-				node.onEditmode = false;
+		div.style.display = "none";
+		button2.innerHTML = "X";
+		input.onkeydown = function (e) {
+			if (e.keyCode == 13) {
+				div.style.display = "none";
+			}
+		};
+		if (button2.addEventListener) {
+			button2.addEventListener("click", function () {});
+		} else if (button2.attachEvent) {
+			button2.attachEvent("onclick", function () {
+				div.style.display = "none";
 			});
 		}
+		document.body.appendChild(div);
+		SET.EDITNODE = div;
+		SET.EDITNODE.INPUT = input;
 	}
+	makeEditerNode();
 
-	function nodeDefaultSet(nodes) {
-		var namespace, idx;
-		for (namespace in nodes) {
-			for (idx in nodes[namespace]) {
-				setNodeFunc(nodes[namespace][idx]);
-			}
-		}
-		for (namespace in nodes) {
-			for (idx in nodes[namespace]) {
-				if (SET.EDIT && namespace !== SET.MASTERDATANODE) {
-					setNodeClick(nodes[namespace][idx]);
-				}
-			}
-		}
+	function showEditerNode(node, e) {
+		SET.EDITNODE.style.top = e.clientY + "px";
+		SET.EDITNODE.style.left = e.clientX + "px";
+		SET.EDITNODE.style.display = "block";
+		SET.EDITNODE.INPUT.value = node.Get();
+		SET.EDITNODE.INPUT.focus();
+		SET.EDITNODE.INPUT.onchange = function () {
+			node.Set(this.value);
+		};
 	}
 
 	function nodeJSONset(nodes) {
@@ -187,11 +184,13 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 			return returnjson;
 		};
 	}
+
 	GETTERSETTER.addNode = function () {
 		var parentMaster = nodes[SET.MASTERDATANODE][0].parentNode;
 		var cloneMaster = nodes[SET.MASTERDATANODE][0].cloneNode(true);
 		parentMaster.appendChild(cloneMaster);
 	};
+
 	GETTERSETTER.makeJSON = function () {
 		var tempNODES = getNode();
 		if (!tempNODES[SET.MASTERDATANODE]) {
@@ -213,11 +212,13 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		console.log(JSON.stringify(returnjson));
 		return returnjson;
 	};
+
 	GETTERSETTER.masterNodeset = function (args) {
 		if (args.length > 0 && typeof args === "string") {
 			SET.MASTERDATANODE = args;
 		}
 	};
+
 	GETTERSETTER.set = function (args) {
 		SET.DATANAME = args || "data-sipu";
 		var NODES = getNode();
