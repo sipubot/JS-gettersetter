@@ -5,6 +5,7 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		MASTERDATANODE: "json-master-sipu",
 		DATANAME: "",
 		EDIT: true,
+		EDITNODE: []
 	};
 
 	function getNode() {
@@ -35,6 +36,7 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 	}
 
 	function setNodeFunc(node) {
+		node.onEditmode = false;
 		switch (node.tagName) {
 		case "A":
 			node.Set = function (address) {
@@ -74,15 +76,16 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		default:
 			if (node.addEventListener) {
 				node.addEventListener("click", function (e) {
-					showEditInput(node, e);
-					console.log(node);
-					if (typeof node.click !== "function") {
+					if(node.onEditmode === false) {
+						node.onEditmode = true;
+						setEditNode(node, e);
 					}
 				});
 			} else if (node.attachEvent) {
 				node.attachEvent("onclick", function (e) {
-					if (typeof node.onclick !== "function") {
-						showEditInput(node, e);
+					if(node.onEditmode === false) {
+						node.onEditmode = true;
+						setEditNode(node, e);
 					}
 				});
 			}
@@ -90,33 +93,35 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
-	function showEditInput(node, e) {
+	function setEditNode(node, e) {
 		var div = document.createElement('div');
 		var input = document.createElement('input');
 		var button = document.createElement('button');
 		div.appendChild(input);
 		div.appendChild(button);
+		div.className = SET.EDITERCLASS;
 		div.style.position = "fixed";
 		div.style.opacity = "0.7";
 		div.style.top = e.clientY + "px";
 		div.style.left = e.clientX + "px";
 		input.value = node.Get();
 		button.innerHTML = "\uc218\uc815";
+		node.appendChild(div);
+		SET.EDITNODE.push(div);
+
 		if (button.addEventListener) {
-			 console.log(typeof button.click);
 			button.addEventListener("click", function () {
 				node.Set(input.value);
 				node.removeChild(div);
+				node.onEditmode = false;
 			});
 		} else if (button.attachEvent) {
 			button.attachEvent("onclick", function () {
 				node.Set(input.value);
-				node.body.removeChild(div);
+				node.removeChild(div);
+				node.onEditmode = false;
 			});
 		}
-		node.appendChild(div);
-		console.log(e);
-		console.log(node);
 	}
 
 	function nodeDefaultSet(nodes) {
