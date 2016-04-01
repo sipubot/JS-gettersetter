@@ -230,7 +230,6 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	};
 	GETTERSETTER.onEdit = function (args) {
-		console.log(args);
 		if (typeof args === "boolean") {
 			SET.EDIT = args;
 		}
