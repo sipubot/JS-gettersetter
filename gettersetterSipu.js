@@ -1,16 +1,16 @@
-var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
+var GetterSetter = (function (GetterSetter, $, undefined) {
 	"use strict";
 	//네임스페이스 트리 만들기. attribute 값을 이용한다.
-	var SET = {
-		MASTERDATANODE: "json-master-sipu",
-		DATANAME: "",
+	var DATA = {
+		Master: "json-master-sipu",
+		AttrName: "",
 		EDIT: false
 	};
 
 	function getNode() {
 		var temp = {};
 		var node = document.getElementsByTagName("*");
-		var datatag = SET.DATANAME;
+		var datatag = DATA.AttrName;
 		var attrValue = "None";
 		for (var i = 0; i < node.length; i++) {
 			if (node[i].hasAttribute(datatag) || node[i].getAttribute(datatag) !== null) {
@@ -34,59 +34,61 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
-	function makeEditerNode() {
-		var div = document.createElement('div');
-		var input = document.createElement('input');
-		var button = document.createElement('button');
-		var button2 = document.createElement('button');
-		div.appendChild(input);
-		div.appendChild(button2);
-		div.style.position = "fixed";
-		div.style.opacity = "0.7";
-		div.style.display = "none";
-		button2.innerHTML = "X";
-		input.onkeydown = function (e) {
-			if (e.keyCode == 13) {
-				div.style.display = "none";
+	function makeSpecialNode(args) {
+		switch (args) {
+		case "Editer":
+			var div = document.createElement('div');
+			var input = document.createElement('input');
+			var button = document.createElement('button');
+			var button2 = document.createElement('button');
+			div.appendChild(input);
+			div.appendChild(button2);
+			div.style.position = "fixed";
+			div.style.opacity = "0.7";
+			div.style.display = "none";
+			button2.innerHTML = "X";
+			input.onkeydown = function (e) {
+				if (e.keyCode == 13) {
+					div.style.display = "none";
+				}
+			};
+			if (button2.addEventListener) {
+				button2.addEventListener("click", function () {});
+			} else if (button2.attachEvent) {
+				button2.attachEvent("onclick", function () {
+					div.style.display = "none";
+				});
 			}
-		};
-		if (button2.addEventListener) {
-			button2.addEventListener("click", function () {});
-		} else if (button2.attachEvent) {
-			button2.attachEvent("onclick", function () {
-				div.style.display = "none";
-			});
-		}
-		document.body.appendChild(div);
-		SET.EDITNODE = div;
-		SET.EDITNODE.INPUT = input;
-	}
-	makeEditerNode();
+			document.body.appendChild(div);
+			return [div, input];
+		default:
 
-	function showEditerNode(node, e) {
-		SET.EDITNODE.style.top = e.clientY + "px";
-		SET.EDITNODE.style.left = e.clientX + "px";
-		SET.EDITNODE.style.display = "block";
-		SET.EDITNODE.INPUT.value = node.Get();
-		SET.EDITNODE.INPUT.focus();
-		SET.EDITNODE.INPUT.onchange = function () {
+		}
+	}
+
+	function showEditerNode(node, e, editer) {
+		editer[0].style.top = e.clientY + "px";
+		editer[0].style.left = e.clientX + "px";
+		editer[0].style.display = "block";
+		editer[1].value = node.Get();
+		editer[1].focus();
+		editer[1].onchange = function () {
 			node.Set(this.value);
 		};
 	}
 
 	function nodeDefaultSet(nodes) {
 		var namespace, idx;
+		var editer = makeSpecialNode("Editer");
 		for (namespace in nodes) {
 			for (idx in nodes[namespace]) {
-				setNodeFunc(nodes[namespace][idx]);
-				if (SET.EDIT && namespace !== SET.MASTERDATANODE) {
-					setNodeClickEditer(nodes[namespace][idx]);
-				}
+				setNodeDefaultFunc(nodes[namespace][idx]);
+				setNodeClickEditer(nodes[namespace][idx], editer, namespace);
 			}
 		}
 	}
 
-	function setNodeFunc(node) {
+	function setNodeDefaultFunc(node) {
 		switch (node.tagName) {
 		case "A":
 			node.Set = function (address) {
@@ -117,28 +119,22 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		}
 	}
 
-	function setNodeClickEditer(node) {
-		switch (node.tagName) {
-		case "A":
-			break;
-		case "IMG":
-			break;
-		default:
+	function setNodeClickEditer(node, editer, namespace) {
+		if (DATA.EDIT && namespace !== DATA.Master) {
 			if (node.addEventListener) {
 				node.addEventListener("click", function (e) {
-					showEditerNode(node, e);
+					showEditerNode(node, e, editer);
 				});
 			} else if (node.attachEvent) {
 				node.attachEvent("onclick", function (e) {
-					showEditerNode(node, e);
+					showEditerNode(node, e, editer);
 				});
 			}
-			break;
 		}
 	}
 
 	function nodeJSONset(nodes) {
-		if (!nodes[SET.MASTERDATANODE]) {
+		if (!nodes[DATA.Master]) {
 			console.log("Not have master node!");
 			return false;
 		}
@@ -147,19 +143,19 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 				console.log("Not Exist JSON");
 				return false;
 			}
-			var parentMaster = nodes[SET.MASTERDATANODE][0].parentNode;
+			var parentMaster = nodes[DATA.Master][0].parentNode;
 			if (!addMode) {
 				parentMaster.innerHTML = "";
 			}
 			for (var i in jsonlist) {
-				var cloneMaster = nodes[SET.MASTERDATANODE][0].cloneNode(true);
+				var cloneMaster = nodes[DATA.Master][0].cloneNode(true);
 				parentMaster.appendChild(cloneMaster);
 			}
 			var newNode = getNode();
 			nodeDefaultSet(newNode);
-			for (var idx in newNode[SET.MASTERDATANODE]) {
+			for (var idx in newNode[DATA.Master]) {
 				for (var namespace in newNode) {
-					if (namespace === SET.MASTERDATANODE) {} else {
+					if (namespace === DATA.Master) {} else {
 						if (typeof newNode[namespace][idx] === "object") {
 							newNode[namespace][idx].Set(jsonlist[idx][namespace]);
 						}
@@ -171,8 +167,8 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		nodes.getJson = function () {
 			var returnjson = [];
 			var jsonunit = {};
-			if (typeof nodes[SET.MASTERDATANODE]) {
-				delete nodes[SET.MASTERDATANODE];
+			if (typeof nodes[DATA.Master]) {
+				delete nodes[DATA.Master];
 			}
 			for (var i in nodes[Object.keys(tempNODES)[0]]) {
 				for (var data in nodes) {
@@ -185,33 +181,33 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		};
 	}
 
-	GETTERSETTER.addRowNode = function () {
+	GetterSetter.addRowNode = function () {
 		var nodes = getNode();
-		var parentMaster = nodes[SET.MASTERDATANODE][0].parentNode;
-		var cloneMaster = nodes[SET.MASTERDATANODE][0].cloneNode(true);
-		setNodeFunc(cloneMaster);
-		if (SET.EDIT) {
+		var parentMaster = nodes[DATA.Master][0].parentNode;
+		var cloneMaster = nodes[DATA.Master][0].cloneNode(true);
+		setNodeDefaultFunc(cloneMaster);
+		if (DATA.EDIT) {
 			setNodeClickEditer(cloneMaster);
 		}
 		parentMaster.appendChild(cloneMaster);
 	};
 
-	GETTERSETTER.removeRowNode = function (i) {
+	GetterSetter.removeRowNode = function (i) {
 		var nodes = getNode();
-		var parentMaster = nodes[SET.MASTERDATANODE][0].parentNode;
-		parentMaster.removeChild(nodes[SET.MASTERDATANODE][i]);
+		var parentMaster = nodes[DATA.Master][0].parentNode;
+		parentMaster.removeChild(nodes[DATA.Master][i]);
 	};
 
-	GETTERSETTER.makeJSON = function () {
+	GetterSetter.makeJSON = function () {
 		var tempNODES = getNode();
-		if (!tempNODES[SET.MASTERDATANODE]) {
+		if (!tempNODES[DATA.Master]) {
 			console.log("Not have master node!");
 			return false;
 		}
 		var returnjson = [];
 		var jsonunit = {};
-		if (typeof tempNODES[SET.MASTERDATANODE]) {
-			delete tempNODES[SET.MASTERDATANODE];
+		if (typeof tempNODES[DATA.Master]) {
+			delete tempNODES[DATA.Master];
 		}
 		nodeDefaultSet(tempNODES);
 		for (var i in tempNODES[Object.keys(tempNODES)[0]]) {
@@ -224,25 +220,25 @@ var GETTERSETTER = (function (GETTERSETTER, $, undefined) {
 		return returnjson;
 	};
 
-	GETTERSETTER.masterNodeset = function (args) {
+	GetterSetter.masterNodeset = function (args) {
 		if (args.length > 0 && typeof args === "string") {
-			SET.MASTERDATANODE = args;
+			DATA.Master = args;
 		}
 	};
-	GETTERSETTER.onEdit = function (args) {
+	GetterSetter.onEdit = function (args) {
 		if (typeof args === "boolean") {
-			SET.EDIT = args;
+			DATA.EDIT = args;
 		}
 	};
 
-	GETTERSETTER.set = function (args) {
-		SET.DATANAME = args || "data-sipu";
+	GetterSetter.set = function (args) {
+		DATA.AttrName = args || "data-sipu";
 		var NODES = getNode();
 		nodeDefaultSet(NODES);
-		nodeJSONset(NODES, SET.DATANAME);
+		nodeJSONset(NODES, DATA.AttrName);
 		return NODES;
 	};
-	return GETTERSETTER;
-})(window.GETTERSETTER || {}, jQuery);
-GETTERSETTER.onEdit(true);
-GETTERSETTER.set();
+	return GetterSetter;
+})(window.GetterSetter || {}, jQuery);
+GetterSetter.onEdit(true);
+GetterSetter.set();
