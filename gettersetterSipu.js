@@ -133,24 +133,6 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		}
 	}
 
-	function onScrollChecker(nodes, percent) {
-		var np = percent || 2;
-		window.addEventListener('scroll', function (e) {
-			for (var i in nodes[DATA.Master]) {
-				if ((window.scrollY + ((10 - np) * Math.ceil(window.innerHeight / 10))) - nodes[DATA.Master][i].offsetTop > 0 &&
-					(window.scrollY + ((np) * Math.ceil(window.innerHeight / 10))) - (nodes[DATA.Master][i].offsetTop + nodes[DATA.Master][i].clientHeight) < 0) {
-					if (nodes[DATA.Master][i].getAttribute("data-onview") === "false" || nodes[DATA.Master][i].getAttribute("data-onview") === null) {
-						nodes[DATA.Master][i].setAttribute("data-onview", "true");
-					}
-				} else {
-					if (nodes[DATA.Master][i].getAttribute("data-onview") === "true" || nodes[DATA.Master][i].getAttribute("data-onview") === null) {
-						nodes[DATA.Master][i].setAttribute("data-onview", "false");
-					}
-				}
-			}
-		});
-	}
-
 	function nodeJSONset(nodes) {
 		if (!nodes[DATA.Master]) {
 			console.log("Not have master node!");
@@ -237,7 +219,7 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		console.log(JSON.stringify(returnjson));
 		return returnjson;
 	};
-	//setValue Again Work on last
+
 	GetterSetter.masterNodeset = function (args) {
 		if (args.length > 0 && typeof args === "string") {
 			DATA.Master = args;
@@ -254,8 +236,6 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		var NODES = getNode();
 		nodeDefaultSet(NODES);
 		nodeJSONset(NODES, DATA.AttrName);
-		onScrollChecker(NODES);
-
 		return NODES;
 	};
 	return GetterSetter;
