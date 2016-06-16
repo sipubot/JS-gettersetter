@@ -6,7 +6,12 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		AttrName: "",
 		EDIT: false
 	};
-
+	var SET = {
+		Editer: false,
+		onScroll: true,
+		onMouse: true,
+	};
+	//공통 함수
 	function getNode() {
 		var temp = {};
 		var node = document.getElementsByTagName("*");
@@ -26,69 +31,36 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		return temp;
 	}
 
-	function checkUrl(url) {
-		var re = /^(http[s]?:\/\/){0,1}(www\.){0,1}[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,5}[\.]{0,1}/;
-		if (!re.test(url)) {
-			console.log()("url error");
-			return false;
-		}
-	}
-
-	function makeSpecialNode(args) {
-		switch (args) {
-		case "Editer":
-			var div = document.createElement('div');
-			var input = document.createElement('input');
-			var button = document.createElement('button');
-			var button2 = document.createElement('button');
-			div.appendChild(input);
-			div.appendChild(button2);
-			div.style.position = "fixed";
-			div.style.opacity = "0.7";
-			div.style.display = "none";
-			button2.innerHTML = "X";
-			input.onkeydown = function (e) {
-				if (e.keyCode == 13) {
-					div.style.display = "none";
-				}
-			};
-			if (button2.addEventListener) {
-				button2.addEventListener("click", function () {});
-			} else if (button2.attachEvent) {
-				button2.attachEvent("onclick", function () {
-					div.style.display = "none";
-				});
+	function checkVal(type, value) {
+		var pattern;
+		switch (type) {
+		case "url":
+			pattern = /^(http[s]?:\/\/){0,1}(www\.){0,1}[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,5}[\.]{0,1}/;
+			if (!pattern.test(value)) {
+				console.log()("url error");
+				return false;
 			}
-			document.body.appendChild(div);
-			return [div, input];
+			break;
 		default:
 
 		}
 	}
-
-	function showEditerNode(node, e, editer) {
-		editer[0].style.top = e.clientY + "px";
-		editer[0].style.left = e.clientX + "px";
-		editer[0].style.display = "block";
-		editer[1].value = node.Get();
-		editer[1].focus();
-		editer[1].onchange = function () {
-			node.Set(this.value);
-		};
-	}
-
+	/**
+	 * 노드 관련 함수
+	 */
 	function nodeDefaultSet(nodes) {
 		var namespace, idx;
-		var editer = makeSpecialNode("Editer");
+		var editer = makeClickEditer();
+		onScrollChecker(nodes);
+		onMouseover(nodes);
 		for (namespace in nodes) {
 			for (idx in nodes[namespace]) {
-				setNodeDefaultFunc(nodes[namespace][idx]);
-				setNodeClickEditer(nodes[namespace][idx], editer, namespace);
+				setNodeSetFunc(nodes[namespace][idx], namespace, editer);
 			}
 		}
 	}
 
-	function setNodeDefaultFunc(node) {
+	function setNodeSetFunc(node, namespace, editer) {
 		switch (node.tagName) {
 		case "A":
 			node.Set = function (address) {
@@ -115,25 +87,67 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 			node.Get = function () {
 				return node.innerHTML;
 			};
+			showEditer(node, namespace, editer);
 			break;
 		}
 	}
 
-	function setNodeClickEditer(node, editer, namespace) {
-		if (DATA.EDIT && namespace !== DATA.Master) {
+	function makeClickEditer() {
+		var div = document.createElement('div');
+		var input = document.createElement('input');
+		var button = document.createElement('button');
+		div.appendChild(input);
+		div.appendChild(button);
+		div.style.position = "fixed";
+		div.style.opacity = "0.7";
+		div.style.display = "none";
+		button.innerHTML = "X";
+		input.onkeydown = function (e) {
+			if (e.keyCode == 13) {
+				div.style.display = "none";
+			}
+		};
+		if (button.addEventListener) {
+			button.addEventListener("click", function () {
+				div.style.display = "none";
+			});
+		} else if (button.attachEvent) {
+			button.attachEvent("onclick", function () {
+				div.style.display = "none";
+			});
+		}
+		document.body.appendChild(div);
+		return [div, input];
+	}
+
+	function showEditer(node, namespace, editer) {
+		if (!SET.Editer) {
+			return false;
+		}
+		if (namespace !== DATA.Master) {
+			var func = function (e) {
+				editer[0].style.top = e.clientY + "px";
+				editer[0].style.left = e.clientX + "px";
+				editer[0].style.display = "block";
+				editer[1].value = node.Get();
+				editer[1].focus();
+				editer[1].onchange = function () {
+					node.Set(this.value);
+				};
+			};
 			if (node.addEventListener) {
-				node.addEventListener("click", function (e) {
-					showEditerNode(node, e, editer);
-				});
+				node.addEventListener("click", func);
 			} else if (node.attachEvent) {
-				node.attachEvent("onclick", function (e) {
-					showEditerNode(node, e, editer);
-				});
+				node.attachEvent("click", func);
 			}
 		}
 	}
 
 	function onScrollChecker(nodes, percent) {
+		if (!SET.onScroll) {
+			return false;
+		}
+
 		var np = percent || 2;
 		window.addEventListener('scroll', function (e) {
 			for (var i in nodes[DATA.Master]) {
@@ -151,7 +165,30 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		});
 	}
 
-	function nodeJSONset(nodes) {
+	function onMouseover(nodes) {
+		if (!SET.onMouse) {
+			return false;
+		}
+		console.log(nodes);
+		var i;
+		var func = function (e) {
+			this.setAttribute("data-onmouse", "true");
+		};
+		var func2 = function (e) {
+			this.setAttribute("data-onmouse", "false");
+		};
+		for (i in nodes[DATA.Master]) {
+			nodes[DATA.Master][i].addEventListener("mouseenter", func);
+		}
+		for (i in nodes[DATA.Master]) {
+			nodes[DATA.Master][i].addEventListener("mouseout", func2);
+		}
+	}
+	/**
+	 * dom 노드 전역 함수
+	 *
+	 */
+	function nodeJSONfunc(nodes) {
 		if (!nodes[DATA.Master]) {
 			console.log("Not have master node!");
 			return false;
@@ -180,7 +217,7 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 					}
 				}
 			}
-			nodeJSONset(newNode);
+			nodeJSONfunc(newNode);
 		};
 		nodes.getJson = function () {
 			var returnjson = [];
@@ -203,10 +240,7 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		var nodes = getNode();
 		var parentMaster = nodes[DATA.Master][0].parentNode;
 		var cloneMaster = nodes[DATA.Master][0].cloneNode(true);
-		setNodeDefaultFunc(cloneMaster);
-		if (DATA.EDIT) {
-			setNodeClickEditer(cloneMaster);
-		}
+		setNodeSetFunc(cloneMaster);
 		parentMaster.appendChild(cloneMaster);
 	};
 
@@ -245,7 +279,7 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 	};
 	GetterSetter.onEdit = function (args) {
 		if (typeof args === "boolean") {
-			DATA.EDIT = args;
+			SET.Editer = args;
 		}
 	};
 
@@ -253,9 +287,7 @@ var GetterSetter = (function (GetterSetter, $, undefined) {
 		DATA.AttrName = args || "data-sipu";
 		var NODES = getNode();
 		nodeDefaultSet(NODES);
-		nodeJSONset(NODES, DATA.AttrName);
-		onScrollChecker(NODES);
-
+		nodeJSONfunc(NODES, DATA.AttrName);
 		return NODES;
 	};
 	return GetterSetter;
