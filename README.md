@@ -3,7 +3,7 @@
   for the FETCH API using data in out adapter 
   
 ### Use 
-```javsscript 
+```javascript 
   worker sub init
   workers.qut = function () {
         var n = new FETCHER();
