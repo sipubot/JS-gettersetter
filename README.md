@@ -1,7 +1,33 @@
-# Getter Setter
+## Fetch Module
+
+  for the FETCH API using data in out adapter 
+  
+### Use 
+```javsscript 
+  worker sub init
+  workers.qut = function () {
+        var n = new FETCHER();
+        n.triggerNode = document.getElementById("set");
+        n.getNode = document.getElementById("set");
+        n.setNode = document.getElementById("set");
+        n.RqADD_URL = "http://sss/aaaaa";
+        n.RqMethod = "GET";
+        n.RequestBodyGetter = n.nodeDataGet;
+        n.ResponseCallback = n.nodeDataSet;
+        n.triggerfunc = n.fetch;
+        n.setHTML = "<h4>{message}example</h4>";
+        n.binder();
+        //test
+        //n.triggerfunc();
+   };
+   
+   workerrunner();
+```
+
+## Getter Setter
   For The HTML Node list binding to json list.
 
-## Use on Script
+### Use on Script
 
  - Initialize
 ```javascript
@@ -34,7 +60,7 @@
 
 ```
 
-##On Detail
+###On Detail
 - json list key And html attribute value String must be matching.
 
  See the Example html
