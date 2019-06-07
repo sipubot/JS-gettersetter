@@ -1,7 +1,8 @@
 var SIPUCOMMON = (function (SIPUCOMMON, $, undefined) {
     "use strict";
+
     function FETCHER() {
-        this.RqBASE_URL = "";
+        this.RqBASE_URL = "https://sipu.iptime.org";
         this.RqADD_HEADER = {};
         this.RqMethod = "POST";
         this.RqContentType = "application/json";
@@ -39,33 +40,28 @@ var SIPUCOMMON = (function (SIPUCOMMON, $, undefined) {
         self.RqURL = self.RqBASE_URL + self.RqADD_URL;
         fetch(self.RqURL, self.Rqinit)
             .then(response => {
-                if (response.ok) {
-                    if (self.RqMethod === "GET") {
-                        var res;
-                        switch (self.RsType) {
-                            case "blob":
-                                response.blob().then((data) => {
-                                    self.ResponseCallback(data);
-                                });
-                                break;
-                            case "json":
-                                response.json().then((data) => {
-                                    self.ResponseCallback(data);
-                                });
-                                break;
-                            default:
-                                response.text().then((data) => {
-                                    self.ResponseCallback(data);
-                                });
-                        }
-                        console.log(res);
-
-                    } else {
-                        self.ResponseCallback(response.ok);
-                    }
-                } else {
+                if (!response.ok) {
                     console.log("request fail");
                 }
+                if (self.RqMethod !== "GET") {
+                    response.text().then(data=>{
+                        console.log(data);
+                        //self.ResponseCallback(data);
+                    });
+                }
+                if (self.RsType === "blob") {
+                    response.blob().then((data) => {
+                        self.ResponseCallback(data);
+                    });
+                }
+                if (self.RsType === "json") {
+                    response.json().then((data) => {
+                        self.ResponseCallback(data);
+                    });
+                }
+                response.text().then((data) => {
+                    self.ResponseCallback(data);
+                });
             })
             .catch(function (error) {
                 console.log('There has been a problem with your fetch operation: ' + error.message);
@@ -108,6 +104,7 @@ var SIPUCOMMON = (function (SIPUCOMMON, $, undefined) {
         self.fetch();
     };
     var workers = {};
+
     function workerrunner() {
         Object.entries(workers).map(a => {
             a[1]();
@@ -117,7 +114,22 @@ var SIPUCOMMON = (function (SIPUCOMMON, $, undefined) {
     function isinsertNode(node) {
         return (node.tagName == "INPUT" || node.tagName == "SELECT" || node.tagName == "TEXTAREA")
     }
-    
+    //use
+    workers.qut = function () {
+        var n = new FETCHER();
+        n.triggerNode = document.getElementById("set");
+        n.getNode = document.getElementById("set");
+        n.setNode = document.getElementById("set");
+        n.RqADD_URL = "/qut";
+        n.RqMethod = "GET";
+        n.RequestBodyGetter = n.nodeDataGet;
+        n.ResponseCallback = n.nodeDataSet;
+        n.triggerfunc = n.fetch;
+        n.setHTML = "<h4>{message}example</h4>";
+        n.binder();
+        //test
+        //n.triggerfunc();
+    };
     SIPUCOMMON.run = function () {
         workerrunner();
     };
